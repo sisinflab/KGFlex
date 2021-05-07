@@ -68,7 +68,7 @@ Datasets can be found [here](data). Each folder contains the necessary to run th
 
 Dataset | #Users | #Items | #Transactions | #Features
 -- | -- | -- | -- | --
-Facebook Movies | 
-Yahoo Movies | 
-Movielens 1M | 
+Facebook Books | 1398 | 2726 | 17626 | 306847
+Yahoo Movies | 4000 |  2491 | 66600 | 1025399
+Movielens 1M | 6040 | 3706 | 1000209 | 2284246
 
