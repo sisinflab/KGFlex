@@ -1,0 +1,37 @@
+experiment:
+  dataset: facebook-books
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/dataset.tsv
+    dataloader: KGFlexLoader
+    side_information:
+      work_directory: ../data/{0}
+      map: ../data/{0}/mapping.tsv
+      features: ../data/{0}/item_features.tsv
+      predicates: ../data/{0}/predicate_mapping.tsv
+  prefiltering:
+    strategy: iterative_k_core
+    core: 5
+  splitting:
+    test_splitting:
+        strategy: random_subsampling
+        test_ratio: 0.2
+  top_k: 10
+  gpu: 1
+  external_models_path: ../external/models/__init__.py
+  evaluation:
+    cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC]
+  models:
+    external.KGFlex:
+      meta:
+        verbose: True
+        validation_rate: 10
+        save_recs: True
+      lr: [0.1, 0.01, 0.001]
+      epochs: 100
+      q: 0.1
+      embedding: [1, 10, 100]
+      parallel_ufm: 48
+      first_order_limit: [0, 10, 100]
+      second_order_limit: [0, 10, 100]

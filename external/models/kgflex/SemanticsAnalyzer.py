@@ -68,3 +68,4 @@ class SemanticsAnalyzer(RecMixin, BaseRecommenderModel):
         k = k.drop(columns=['index'])
         k.to_csv(os.path.join(self._save_path, 'features_word_cloud.csv'), index=False,
                  header=['weight', 'word', 'color', 'url'], sep=";")
+        print("File saved. Ignore the following errors.")
