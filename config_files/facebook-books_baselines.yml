@@ -28,7 +28,7 @@ experiment:
         verbose: True
         save_recs: True
       seed: 42
-    MostPop:
+    external.MostPop:
       meta:
         verbose: True
         save_recs: True
