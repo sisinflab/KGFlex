@@ -27,8 +27,11 @@ This software works on the following operating systems:
 Please, make sure to have the following installed on your system:
 
 * Python 3.8.0 or later
+* [Elliot](https://github.com/sisinflab/elliot) (see how to install from source)
 
-Python dependencies need to be installed with the command:
+Then, to incorporate KGFlex in Elliot, copy and paste the KGFlex files into the Elliot home directory.
+
+Finally, Python dependencies need to be installed with the command:
 
 ```
 pip install -r requirements.txt
@@ -49,9 +52,9 @@ python run.py
 ```
 
 It trains our KGFlex model and the other baseline models with the three different datasets and, with one of them, also performs the semantic analysis.
-A description of the dataset is provided [here](#datasets).
+A description of the datasets is provided [here](#datasets), while a comprehensive list of KGFlex parameters is available [here](#).
 
-The results will be stored ...
+The results will be stored in the folder ```results/DATASET/```. Both the recommendation lists and the performance can be stored, depending on how the experiment is configured.
 
 ### Experiments configuration
 
@@ -61,6 +64,8 @@ The configuration files can be found [here](config_files/).
 In [run.py](run.py) all the experiments are executed sequencially, but it is also possibile to execute them separately, one by one.
 
 Configuration files are ```YAML``` files within which all necessary information are provided to setup the experiment: such as the dataset, the splitting strategy, the evaluation metrics and the models. A sigle experiment can contain more than one model and for each of them specific hyperparameters can be defined.
+
+For further information about how to configure Elliot experiments, please refer to Elliot documentation.
 
 ### Datasets
 
