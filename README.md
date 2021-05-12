@@ -125,8 +125,7 @@ Movielens 1M | 6040 | 3706 | 1000209 | 2284246
 
 ## KGFlex Parameters
 
-The following are the parameters required by our KGFlex model.
-
+The following are the parameters required by our KGFlex model:
 - **lr**: learning rate, size of each learning step
 - **epochs**: number of Gradient Descent iterations
 - **q: 
