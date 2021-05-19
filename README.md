@@ -1,7 +1,7 @@
 # KGFlex: a Knowledge-Aware Hybrid Recommender System
 
 This is the official implementation of the paper
-*Sparse Feature Factorization for Recommender Systems with Knowledge Graphs*
+*Sparse Feature Factorization for Recommender Systems with Knowledge Graphs*.
 
 
 ## Description
