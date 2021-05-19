@@ -28,9 +28,8 @@ This software works on the following operating systems:
 Please, make sure to have the following installed on your system:
 
 * Python 3.8.0 or later
-* [Elliot](https://github.com/sisinflab/elliot) (see how to install from source)
 
-Then, to incorporate KGFlex in Elliot, copy and paste the KGFlex files into the Elliot home directory.
+KGFlex uses [Elliot](https://github.com/sisinflab/elliot) as reproducibility framework. This repository includes a ready-to-use distribution of Elliot including KGFlex and the other baselines analyzed in the paper. Thus, you can clone this repository and start to experiment with the models.
 
 Finally, Python dependencies need to be installed with the command:
 
