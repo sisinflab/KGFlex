@@ -1,3 +1,12 @@
+"""
+Module description:
+
+"""
+
+__version__ = '0.1'
+__author__ = 'Vito Walter Anelli, Claudio Pomo'
+__email__ = 'vitowalter.anelli@poliba.it, claudio.pomo@poliba.it'
+
 import os
 import numpy as np
 import typing as t
@@ -13,6 +22,29 @@ from elliot.utils import logging
 from elliot.splitter.base_splitter import Splitter
 from elliot.prefiltering.standard_prefilters import PreFilter
 
+"""
+[(train_0,test_0)]
+[([(train_0,val_0)],test_0)]
+[data_0]
+
+[([(train_0,val_0), (train_1,val_1), (train_2,val_2), (train_3,val_3), (train_4,val_4)],test_0),
+([(train_0,val_0), (train_1,val_1), (train_2,val_2), (train_3,val_3), (train_4,val_4)],test_1),
+([(train_0,val_0), (train_1,val_1), (train_2,val_2), (train_3,val_3), (train_4,val_4)],test_2),
+([(train_0,val_0), (train_1,val_1), (train_2,val_2), (train_3,val_3), (train_4,val_4)],test_3),
+([(train_0,val_0), (train_1,val_1), (train_2,val_2), (train_3,val_3), (train_4,val_4)],test_4)]
+
+[[data_0,data_1,data_2,data_3,data_4],
+[data_0,data_1,data_2,data_3,data_4],
+[data_0,data_1,data_2,data_3,data_4],
+[data_0,data_1,data_2,data_3,data_4],
+[data_0,data_1,data_2,data_3,data_4]]
+
+[[data_0],[data_1],[data_2]]
+
+[[data_0,data_1,data_2]]
+
+[[data_0,data_1,data_2],[data_0,data_1,data_2],[data_0,data_1,data_2]]
+"""
 
 class TextColor(Enum):
     OKBLUE = '\033[94m'
@@ -23,7 +55,6 @@ class TextColor(Enum):
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-
 
 class KGFlexLoader:
     """
@@ -57,10 +88,9 @@ class KGFlexLoader:
             features_path = config.data_config.side_information.features
             predicates_path = config.data_config.side_information.predicates
 
-            self.train_dataframe, self.side_information_data.feature_map, self.side_information_data.predicate_mapping = self.load_dataset_dataframe(
-                path_train_data,
-                predicates_path,
-                features_path)
+            self.train_dataframe, self.side_information_data.feature_map, self.side_information_data.predicate_mapping = self.load_dataset_dataframe(path_train_data,
+                                                                                                 predicates_path,
+                                                                                                 features_path)
 
             self.train_dataframe = self.check_timestamp(self.train_dataframe)
 
@@ -99,10 +129,9 @@ class KGFlexLoader:
             features_path = config.data_config.side_information.features
             predicates_path = config.data_config.side_information.predicates
 
-            self.dataframe, self.side_information_data.feature_map, self.side_information_data.predicate_mapping = self.load_dataset_dataframe(
-                path_dataset,
-                predicates_path,
-                features_path)
+            self.dataframe, self.side_information_data.feature_map, self.side_information_data.predicate_mapping = self.load_dataset_dataframe(path_dataset,
+                                                                                                 predicates_path,
+                                                                                                 features_path)
             self.dataframe = self.check_timestamp(self.dataframe)
 
             self.logger.info(('{0} - Loaded'.format(path_dataset)))
@@ -128,8 +157,7 @@ class KGFlexLoader:
         for dirs in os.listdir(folder_path):
             for test_dir in dirs:
                 test_ = pd.read_csv(f"{folder_path}{test_dir}/test.tsv", sep="\t")
-                val_dirs = [f"{folder_path}{test_dir}/{val_dir}/" for val_dir in os.listdir(f"{folder_path}{test_dir}")
-                            if os.path.isdir(f"{folder_path}{test_dir}/{val_dir}")]
+                val_dirs = [f"{folder_path}{test_dir}/{val_dir}/" for val_dir in os.listdir(f"{folder_path}{test_dir}") if os.path.isdir(f"{folder_path}{test_dir}/{val_dir}")]
                 val_list = []
                 for val_dir in val_dirs:
                     train_ = pd.read_csv(f"{val_dir}/train.tsv", sep="\t")
@@ -149,14 +177,12 @@ class KGFlexLoader:
                 # validation level
                 val_list = []
                 for train, val in train_val:
-                    single_dataobject = KGFlexDataObject(self.config, (train, val, test), self.side_information_data,
-                                                         self.args, self.kwargs)
+                    single_dataobject = KGFlexDataObject(self.config, (train,val,test), self.side_information_data, self.args, self.kwargs)
                     val_list.append(single_dataobject)
                 data_list.append(val_list)
             else:
-                single_dataobject = KGFlexDataObject(self.config, (train_val, test), self.side_information_data,
-                                                     self.args,
-                                                     self.kwargs)
+                single_dataobject = KGFlexDataObject(self.config, (train_val, test), self.side_information_data, self.args,
+                                                              self.kwargs)
                 data_list.append([single_dataobject])
         return data_list
 
@@ -176,7 +202,7 @@ class KGFlexLoader:
                                              for item in training_set['itemId'].unique()}
 
         data_list = [[KGFlexDataObject(self.config, (training_set, test_set), side_information_data,
-                                       self.args, self.kwargs)]]
+                                                self.args, self.kwargs)]]
 
         return data_list
 
@@ -245,6 +271,37 @@ class KGFlexLoader:
         return new_map
 
     def filter_predicates_by_frequency(self, item_features):
+
+        # ------------------------- DETECTING FEATURES WITH MISSING VALUES AND DISTINCT VALUES -------------------------
+
+
+        # ------------ FILTERING ITEM FEATURES ------------
+        # self.print_status('detecting and removing missing values and distinct values')
+
+        '''
+        # MISSING
+        n_items = len(self.item_features.item_id.unique())
+        items_per_predicate_dict = self.item_features.groupby(['predicate', 'item_id']).size() \
+            .groupby('predicate').size().to_dict()
+        items_per_predicate = np.array(tuple(items_per_predicate_dict.values()))
+        pred_indexes = np.array(tuple(items_per_predicate_dict.keys()))
+        missing_rate = (n_items - items_per_predicate) / n_items
+
+        # DISTINCT
+        objects_per_feature = self.item_features.groupby(['predicate', 'object']).size() \
+            .groupby('predicate').size().to_numpy()
+        occurrences_per_predicate_dict = self.item_features.groupby(['predicate']).size().to_dict()
+        occurrences_per_predicate = np.array(tuple(items_per_predicate_dict.values()))
+
+        assert np.array_equal(pred_indexes, np.array(tuple(occurrences_per_predicate_dict.keys())))
+
+        distinct_rate = objects_per_feature / occurrences_per_predicate
+
+        keep_mask = (missing_rate <= 0.997) * (distinct_rate <= 0.997)
+        keep_set = set(pred_indexes[np.where(keep_mask)[0]])
+        '''
+
+
         threshold = 10
 
         # SIMPLER VERSION
@@ -305,14 +362,18 @@ class KGFlexDataObject:
         self.items = list({k for a in self.train_dict.values() for k in a.keys()})
         self.num_items = len(self.items)
 
+        # self.features = list({f for i in self.items for f in self.side_information_data.feature_map[i]})
+        # self.factors = len(self.features)
         self.private_users = {p: u for p, u in enumerate(self.users)}
         self.public_users = {v: k for k, v in self.private_users.items()}
         self.private_items = {p: i for p, i in enumerate(self.items)}
         self.public_items = {v: k for k, v in self.private_items.items()}
+        # self.private_features = {p: f for p, f in enumerate(self.features)}
+        # self.public_features = {v: k for k, v in self.private_features.items()}
         self.transactions = sum(len(v) for v in self.train_dict.values())
 
         self.i_train_dict = {self.public_users[user]: {self.public_items[i]: v for i, v in items.items()}
-                             for user, items in self.train_dict.items()}
+                                for user, items in self.train_dict.items()}
 
         self.sp_i_train = self.build_sparse()
         self.sp_i_train_ratings = self.build_sparse_ratings()
@@ -323,7 +384,9 @@ class KGFlexDataObject:
             self.val_dict = self.build_dict(data_tuple[1], self.users)
             self.test_dict = self.build_dict(data_tuple[2], self.users)
 
+
         # KaHFM compatible features
+
         kgflex_feature_df = self.side_information_data.feature_map.copy()
 
         def f(x):
@@ -341,8 +404,7 @@ class KGFlexDataObject:
         kgflex_feature_df["bind2"] = kgflex_feature_df["bind"].map(feature_index)
         kgflex_feature_df.drop(columns=["bind"], inplace=True)
 
-        self.side_information_data.kahfm_feature_map = kgflex_feature_df.groupby("itemId")["bind2"].apply(
-            list).to_dict()
+        self.side_information_data.kahfm_feature_map = kgflex_feature_df.groupby("itemId")["bind2"].apply(list).to_dict()
 
         self.features = list(set(feature_index.values()))
         self.private_features = {p: f for p, f in enumerate(self.features)}
@@ -351,8 +413,7 @@ class KGFlexDataObject:
         if len(data_tuple) == 2:
             self.test_dict = self.build_dict(data_tuple[1], self.users)
             if hasattr(config, "negative_sampling"):
-                val_neg_samples, test_neg_samples = NegativeSampler.sample(config, self.public_users, self.public_items,
-                                                                           self.sp_i_train, None, self.test_dict)
+                val_neg_samples, test_neg_samples = NegativeSampler.sample(config, self.public_users, self.public_items, self.sp_i_train, None, self.test_dict)
                 sp_i_test = self.to_bool_sparse(self.test_dict)
                 test_candidate_items = test_neg_samples + sp_i_test
                 self.test_mask = np.where((test_candidate_items.toarray() == True), True, False)
@@ -360,9 +421,7 @@ class KGFlexDataObject:
             self.val_dict = self.build_dict(data_tuple[1], self.users)
             self.test_dict = self.build_dict(data_tuple[2], self.users)
             if hasattr(config, "negative_sampling"):
-                val_neg_samples, test_neg_samples = NegativeSampler.sample(config, self.public_users, self.public_items,
-                                                                           self.sp_i_train, self.val_dict,
-                                                                           self.test_dict)
+                val_neg_samples, test_neg_samples = NegativeSampler.sample(config, self.public_users, self.public_items, self.sp_i_train, self.val_dict, self.test_dict)
                 sp_i_val = self.to_bool_sparse(self.val_dict)
                 sp_i_test = self.to_bool_sparse(self.test_dict)
                 val_candidate_items = val_neg_samples + sp_i_val
@@ -420,3 +479,5 @@ class KGFlexDataObject:
 
     def get_validation(self):
         return self.val_dict if hasattr(self, 'val_dict') else None
+
+

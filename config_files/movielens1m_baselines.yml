@@ -33,7 +33,7 @@ experiment:
       meta:
         verbose: True
         save_recs: True
-    ItemKNN:
+    external.ItemKNN:
       meta:
         validation_rate: 1
         save_recs: True
