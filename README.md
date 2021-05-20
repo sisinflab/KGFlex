@@ -124,10 +124,10 @@ Movielens 1M | 6040 | 3706 | 1000209 | 2284246
 ## KGFlex Parameters
 
 The following are the parameters required by our KGFlex model:
-- **lr**: learning rate, size of each learning step
-- **epochs**: number of Gradient Descent iterations
-- **q**: fraction of users selected for each learning epoch. It is a decimal number within 0 and 1. 
-- **embedding**: item features embedding dimension
-- **parallel_ufm**: number of parallel processes that will be executed during the user feature mapping operation.
-- **first_order_limit**: max number of first order features for each user model
-- **second_order_limit**: max number of second order features for each user model
+- ```lr```: learning rate, size of each learning step
+- ```epochs```: number of Gradient Descent iterations
+- ```q```: fraction of users selected for each learning epoch. It is a decimal number within 0 and 1. 
+- ```embedding```: item features embedding dimension
+- ```parallel_ufm```: number of parallel processes that will be executed during the user feature mapping operation.
+- ```first_order_limit```: max number of first order features for each user model
+- ```second_order_limit```: max number of second order features for each user model
