@@ -1,8 +1,7 @@
 # KGFlex: a Knowledge-Aware Hybrid Recommender System
 
-This is the official implementation of the paper:
-
-*"Sparse Feature Factorization for Recommender Systems with Knowledge Graphs"*
+This is the official implementation of the paper
+*Sparse Feature Factorization for Recommender Systems with Knowledge Graphs*.
 
 
 ## Description
@@ -28,9 +27,8 @@ This software works on the following operating systems:
 Please, make sure to have the following installed on your system:
 
 * Python 3.8.0 or later
-* [Elliot](https://github.com/sisinflab/elliot) (see how to install from source)
 
-Then, to incorporate KGFlex in Elliot, copy and paste the KGFlex files into the Elliot home directory.
+KGFlex uses [Elliot](https://github.com/sisinflab/elliot) as reproducibility framework. This repository includes a ready-to-use distribution of Elliot including KGFlex and the other baselines analyzed in the paper. Thus, you can clone this repository and start to experiment with the models.
 
 Finally, Python dependencies need to be installed with the command:
 
@@ -44,7 +42,7 @@ Here we describe the steps to reproduce the results presented in the paper. Furt
 
 ### Reproduce Paper Results
 
-[Here](run.py) you can find a ready-to-run python file with all the pre-configured experiments cited in our paper.
+[Here](run.py) you can find a ready-to-run Python file with all the pre-configured experiments cited in our paper.
 
 You can easily run them with the following command:
 
