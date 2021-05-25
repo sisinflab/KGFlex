@@ -9,6 +9,8 @@ from collections import OrderedDict, Counter
 import pandas as pd
 # from modules.auxiliar import TextColor, import_as_tsv
 from multiprocessing import Process, Queue, cpu_count
+import multiprocessing
+multiprocessing.set_start_method("fork")
 
 
 class UserFeatureMapper:
@@ -204,7 +206,7 @@ class UserFeatureMapper:
                     entropies_1 = self.features_entropy(pos_1, neg_1, counter_1)
 
                     # top 10 1st-order-features ordered by entropy
-                    entropies_1_red = OrderedDict(islice(entropies_1.items(), limit_second))
+                    entropies_1_red = OrderedDict(islice(entropies_1.items(), limit_first))
                     # filtering pos and neg features respect to the 'top limit' selected
                     pos_1_red = Counter({k: pos_1[k] for k in entropies_1_red.keys()})
                     neg_1_red = Counter({k: neg_1[k] for k in entropies_1_red.keys()})
