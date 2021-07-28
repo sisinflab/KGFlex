@@ -30,6 +30,6 @@ experiment:
       parallel_ufm: 48
       first_order_limit: 100
       second_order_limit: 100
-      predicate_mapping: ../data/yahoo-movies/predicate_mapping.tsv
-      object_mapping: ../data/yahoo-movies/object_mapping.tsv
-      save_path: ../data/yahoo-movies/
+      predicate_mapping: data/yahoo-movies/predicate_mapping.tsv
+      object_mapping: data/yahoo-movies/object_mapping.tsv
+      save_path: data/yahoo-movies/
