@@ -1,0 +1,16 @@
+2021-11-16 16:36:51.451421: I Start experiment
+2021-11-16 16:37:16.097524: I Tuning begun for KGFlex
+
+2021-11-16 16:37:16.103123: I Hyperparameter tuning exploration:
+2021-11-16 16:37:16.103270: I embedding set to 1
+2021-11-16 16:37:16.103389: I first_order_limit set to 100
+2021-11-16 16:37:16.103545: I lr set to 0.001
+2021-11-16 16:37:16.103652: I second_order_limit set to 10
+2021-11-16 17:58:45.321413: I Start experiment
+2021-11-16 17:59:09.289080: I Tuning begun for KGFlex
+
+2021-11-16 17:59:09.294768: I Hyperparameter tuning exploration:
+2021-11-16 17:59:09.294877: I embedding set to 1
+2021-11-16 17:59:09.294974: I first_order_limit set to 100
+2021-11-16 17:59:09.295524: I lr set to 0.001
+2021-11-16 17:59:09.297476: I second_order_limit set to 10
