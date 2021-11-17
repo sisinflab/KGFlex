@@ -11,7 +11,7 @@ from elliot.utils.write import store_recommendation
 from .UserFeatureMapper import UserFeatureMapper
 from . import Client, ClientModel, Server, ServerModel
 from collections import defaultdict
-
+from .kgflex_model import KGFlex_Model
 
 class KGFlex(RecMixin, BaseRecommenderModel):
     @init_charger
@@ -52,37 +52,73 @@ class KGFlex(RecMixin, BaseRecommenderModel):
                                                      self.item_features_mapper,
                                                      self._data.side_information_data.predicate_mapping, self._seed)
         client_ids = list(self._data.i_train_dict.keys())
+
+        users = list(self._data.private_users.keys())
+        items = list(self._data.private_items.keys())
+        n_users = len(users)
+        n_items = len(items)
+
         self.user_feature_mapper.compute_and_export_features(client_ids, self._parallel_ufm, self._first_order_limit,
                                                              self._second_order_limit)
 
         # ------------------------------ MODEL FEATURES ------------------------------
         print('features mapping')
+        users_features = self.user_feature_mapper.client_features
 
         # mapping features in columns
-        model_features_mapping = defaultdict(lambda: len(model_features_mapping))
+        features_mapping = defaultdict(lambda: len(features_mapping))
         for c in client_ids:
-            for feature in self.user_feature_mapper.client_features[c]:
-                _ = model_features_mapping[feature]
+            for feature in users_features[c]:
+                _ = features_mapping[feature]
 
         # total number of features (i.e. columns of the item matrix / latent factors)
-        print('FEATURES INFO: {} features found'.format(len(model_features_mapping)))
+        print('FEATURES INFO: {} features found'.format(len(features_mapping)))
         item_features_mask = []
         for _, v in self.item_features_mapper.items():
-            common = set.intersection(set(model_features_mapping.keys()), set(v))
-            item_features_mask.append([True if f in common else False for f in model_features_mapping])
+            common = set.intersection(set(features_mapping.keys()), set(v))
+            item_features_mask.append([True if f in common else False for f in features_mapping])
         self.item_features_mask = csr_matrix(item_features_mask)
 
-        # ------------------------------ INITIALIZING NODES ------------------------------
+        index_mask = {user: [True if f in users_features[user] else False
+                             for f in features_mapping] for user in users}
 
+        index_mask_csr = {user: csr_matrix(mask) for user, mask in index_mask.items()}
+
+        user_item_feature_mask = {user: csr_matrix.multiply(self.item_features_mask, index_mask[0])
+                                  for user, mask in index_mask.items()}
+
+        # ------------------------------ POSITIVE AND NEGATIVE ITEMS ------------------------------
+
+        # positive items are the one in the training set
+        positive_items = {user: set(ratings.keys()) for user, ratings in self._data.i_train_dict.items()}
+        all_items = set(self._data.private_items)
+        negative_items = {user: all_items - items for user, items in positive_items.items()}
+
+
+        # ------------------------------ MODEL ------------------------------
+
+        model = KGFlex_Model(learning_rate=self._lr,
+                             n_users=n_users,
+                             users=users,
+                             n_items=n_items,
+                             n_features=len(features_mapping),
+                             features_mapping=features_mapping,
+                             embedding_size=self._embedding,
+                             positive_items=positive_items,
+                             negative_items=negative_items,
+                             index_mask=index_mask,
+                             users_features=users_features)
+
+        # ------------------------------ INITIALIZING NODES ------------------------------
         print('initializing server')
         self.server = Server.Server(self._lr,
-                                    ServerModel.ServerModel(model_features_mapping, self._embedding, self._seed))
+                                    ServerModel.ServerModel(features_mapping, self._embedding, self._seed))
 
         print('creating clients')
         self.clients = [
             Client.Client(c, ClientModel.ClientModel(self._embedding),
                           self._data.i_train_dict[c], self.user_feature_mapper.client_features[c],
-                          model_features_mapping, self._upc,
+                          features_mapping, self._upc,
                           self.item_features_mask, self._seed) for c in tqdm(client_ids)]
 
         print(f"\nINFO: clients created\n")

@@ -10,49 +10,53 @@ __email__ = 'vitowalter.anelli@poliba.it, claudio.pomo@poliba.it, daniele.malite
 import tensorflow as tf
 import numpy as np
 from tensorflow import keras
+from scipy.sparse import csr_matrix
 
+_RANDOM_SEED = 42
 
-class VBPR_model(keras.Model):
-    def __init__(self, factors=200, factors_d=20,
-                 learning_rate=0.001,
-                 l_w=0, l_b=0, l_e=0,
-                 emb_image=None,
-                 num_users=100,
-                 num_items=100,
+class KGFlex_Model(keras.Model):
+    def __init__(self, learning_rate,
+                 n_users,
+                 users,
+                 n_items,
+                 n_features,
+                 features_mapping,
+                 embedding_size,
+                 positive_items,
+                 negative_items,
+                 index_mask,
+                 users_features,
                  name="VBPRMF",
+                 random_seed=_RANDOM_SEED,
                  **kwargs):
+
         super().__init__(name=name, **kwargs)
         tf.random.set_seed(42)
 
-        self._factors = factors
-        self._factors_d = factors_d
         self._learning_rate = learning_rate
-        self.l_w = l_w
-        self.l_b = l_b
-        self.l_e = l_e
-        self.emb_image = emb_image
-        self.num_image_feature = self.emb_image.shape[1]
-        self._num_items = num_items
-        self._num_users = num_users
+        self._n_users = n_users
+        self._n_items = n_items
 
-        self.initializer = tf.initializers.GlorotUniform()
+        self._n_features = n_features
+        self._embedding_size = embedding_size
 
-        self.Bi = tf.Variable(tf.zeros(self._num_items), name='Bi', dtype=tf.float32)
-        self.Gu = tf.Variable(self.initializer(shape=[self._num_users, self._factors]), name='Gu', dtype=tf.float32)
-        self.Gi = tf.Variable(self.initializer(shape=[self._num_items, self._factors]), name='Gi', dtype=tf.float32)
+        self._positive_items = positive_items
+        self.negative_items = negative_items
 
-        self.Bp = tf.Variable(
-            self.initializer(shape=[self.num_image_feature, 1]), name='Bp', dtype=tf.float32)
-        self.Tu = tf.Variable(
-            self.initializer(shape=[self._num_users, self._factors_d]),
-            name='Tu', dtype=tf.float32)
-        self.F = tf.Variable(
-            self.emb_image, dtype=tf.float32, trainable=False)
-        self.E = tf.Variable(
-            self.initializer(shape=[self.num_image_feature, self._factors_d]),
-            name='E', dtype=tf.float32)
+        self.feature_vecs = np.random.randn(self._n_features, self._embedding_size) / 10
+        self.feature_bias = np.random.randn(self._n_features) / 10
 
-        self.optimizer = tf.optimizers.Adam(self._learning_rate)
+        self.users_vecs = {user : np.zeros((self._n_features, self._embedding_size)) for user in users}
+        for key, value in self.users_vecs.items():
+            self.users_vecs[key][index_mask[key]] = np.random.randn(sum(index_mask[key]), self._embedding_size) / 10
+            self.users_vecs[key] = csr_matrix(self.users_vecs[key])
+
+        users_weights = dict()
+        for u in users:
+            users_weights[u] = csr_matrix(
+                [users_features[u][feature] if feature in users_features[u] else 0 for feature in features_mapping])
+
+        pass
 
     @tf.function
     def call(self, inputs, training=None):
