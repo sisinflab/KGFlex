@@ -1,0 +1,18 @@
+experiment:
+  dataset: movielens_1m
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/movielens1m/dataset.tsv
+  splitting:
+    test_splitting:
+        strategy: random_subsampling
+        test_ratio: 0.2
+  top_k: 10
+  evaluation:
+    simple_metrics: [nDCG]
+#  gpu: -1
+  external_models_path: ../external/models/__init__.py
+  models:
+    external.KGFlex_TF:
+      meta:
+        save_recs: True
