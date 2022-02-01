@@ -10,6 +10,7 @@ import pandas as pd
 # from modules.auxiliar import TextColor, import_as_tsv
 from multiprocessing import Process, Queue, cpu_count
 import multiprocessing
+
 multiprocessing.set_start_method("fork")
 
 
@@ -153,6 +154,32 @@ class UserFeatureMapper:
             ig = info_gain(pos_counter[positive_feature], neg_counter[positive_feature], counter)
             if ig > 0:
                 attribute_entropies[positive_feature] = ig
+
+        return OrderedDict(sorted(attribute_entropies.items(), key=itemgetter(1), reverse=True))
+
+    @staticmethod
+    def features_gini(pos_counter, neg_counter, counter):
+
+        def relative_gini(partial, total):
+            return 1 - (partial / total) ** 2
+
+        def gini_index(pos_c, neg_c, n_items):
+            den_1 = pos_c + neg_c
+            gini_pos = relative_gini(pos_c, den_1) + relative_gini(neg_c, den_1)
+            den_2 = 2 * n_items - (pos_c + neg_c)
+
+            num_1 = n_items - pos_c
+            num_2 = n_items - neg_c
+            gini_neg = relative_gini(num_1, den_2) + relative_gini(num_2, den_2)
+
+            return den_1 / (den_1 + den_2) * gini_pos - den_2 / (den_1 + den_2) * gini_neg
+
+        attribute_entropies = dict()
+        # compute Gini for each feature
+        for positive_feature in pos_counter:
+            gini = gini_index(pos_counter[positive_feature], neg_counter[positive_feature], counter)
+            if gini > 0:
+                attribute_entropies[positive_feature] = gini
 
         return OrderedDict(sorted(attribute_entropies.items(), key=itemgetter(1), reverse=True))
 
