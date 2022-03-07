@@ -14,13 +14,17 @@ multiprocessing.set_start_method("fork")
 
 
 class UserFeatureMapper:
-    def __init__(self, data, item_features_dict, predicate_mapping: pd.DataFrame, random_seed=42):
+    def __init__(self, data, item_features_dict, predicate_mapping: pd.DataFrame, n_procs=None,  random_seed=42):
+        # set random seed
         np.random.seed(random_seed)
-
+        # training set
         self.user_pos_items = data
-
+        # dictionary containing features and their depth ('predicate_order')
         self.predicate_mapping = predicate_mapping.set_index('predicate')['predicate_order'].to_dict()
-
+        # number of parallel processes
+        if n_procs is None:
+            self._n_procs = cpu_count()
+        # declaring variables
         self.client_features = dict()
         self.clients_with_feature_extracted = set()
         self.item_features_dict = item_features_dict

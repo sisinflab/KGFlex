@@ -8,7 +8,7 @@ from elliot.recommender.base_recommender_model import init_charger
 from elliot.recommender.recommender_utils_mixin import RecMixin
 from elliot.utils.write import store_recommendation
 
-from .UserFeatureMapper import UserFeatureMapper
+from .UserFeatureMapper2 import UserFeatureMapper
 from . import Client, ClientModel, Server, ServerModel
 from collections import defaultdict
 
@@ -48,12 +48,16 @@ class KGFlex(RecMixin, BaseRecommenderModel):
         # ------------------------------ USER FEATURES ------------------------------
         print('user features loading')
 
-        self.user_feature_mapper = UserFeatureMapper(self._data.i_train_dict,
+        self.user_feature_mapper = UserFeatureMapper(self._data,
                                                      self.item_features_mapper,
-                                                     self._data.side_information_data.predicate_mapping, self._seed)
+                                                     self._data.side_information_data.predicate_mapping,
+                                                     self._first_order_limit,
+                                                     self._second_order_limit,
+                                                     random_seed=self._seed)
         client_ids = list(self._data.i_train_dict.keys())
-        self.user_feature_mapper.compute_and_export_features(client_ids, self._parallel_ufm, self._first_order_limit,
-                                                             self._second_order_limit)
+        self.user_feature_mapper.get_user_feature_weights(client_ids)
+        #self.user_feature_mapper.compute_and_export_features(client_ids, self._parallel_ufm, self._first_order_limit,
+        #                                                     self._second_order_limit)
 
         # ------------------------------ MODEL FEATURES ------------------------------
         print('features mapping')
