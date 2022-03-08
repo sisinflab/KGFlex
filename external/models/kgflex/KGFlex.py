@@ -8,7 +8,6 @@ import math
 from elliot.recommender import BaseRecommenderModel
 from elliot.recommender.base_recommender_model import init_charger
 from elliot.recommender.recommender_utils_mixin import RecMixin
-from elliot.utils.write import store_recommendation
 
 from .UserFeatureMapper import UserFeatureMapper
 from . import Client, ClientModel, Server, ServerModel
@@ -40,18 +39,17 @@ class KGFlex(RecMixin, BaseRecommenderModel):
         self.transactions = len(training_set)
 
         # ------------------------------ ITEM FEATURES ------------------------------
-        print('importing items features')
-
+        print('ITEM FEATURES: loading items features...\n')
         self.item_features_mapper = {item: set(map(tuple,
                                                    self._data.side_information_data.feature_map[
                                                        self._data.side_information_data.feature_map.itemId ==
                                                        self._data.private_items[item]]
                                                    [['predicate', 'object']].values))
                                      for item in self._data.private_items}
+        print(f'\nITEM FEATURES: features loaded for {len(self.item_features_mapper)} items\n')
 
         # ------------------------------ USER FEATURES ------------------------------
-        print('user features loading')
-
+        print('USER FEATURES: user features loading...\n')
         self.user_feature_mapper = UserFeatureMapper(self._data,
                                                      self.item_features_mapper,
                                                      self._data.side_information_data.predicate_mapping,
@@ -62,39 +60,39 @@ class KGFlex(RecMixin, BaseRecommenderModel):
                                                      n_procs=self._parallel_ufm,
                                                      depth=2)
         client_ids = list(self._data.i_train_dict.keys())
-        self.user_feature_mapper.get_user_feature_weights_MP(client_ids)
+        self.user_feature_mapper.user_feature_weights(client_ids)
+        print('USER FEATURES: user features loaded\n')
 
         # ------------------------------ MODEL FEATURES ------------------------------
-        print('features mapping')
-
+        print('MODEL FEATURES: features mapping...')
         # mapping features in columns
         model_features_mapping = defaultdict(lambda: len(model_features_mapping))
         for c in client_ids:
             for feature in self.user_feature_mapper.client_features[c]:
                 _ = model_features_mapping[feature]
+        print(f'MODEL FEATURES: {len(model_features_mapping)} features mapped')
 
         # total number of features (i.e. columns of the item matrix / latent factors)
-        print('FEATURES INFO: {} features found'.format(len(model_features_mapping)))
         item_features_mask = []
         for _, v in self.item_features_mapper.items():
             common = set.intersection(set(model_features_mapping.keys()), set(v))
             item_features_mask.append([True if f in common else False for f in model_features_mapping])
         self.item_features_mask = csr_matrix(item_features_mask)
 
-        # ------------------------------ INITIALIZING NODES ------------------------------
+        # ------------------------------ SYSTEM INITIALIZATION ------------------------------
 
-        print('initializing server')
-        self.server = Server.Server(self._lr,
-                                    ServerModel.ServerModel(model_features_mapping, self._embedding, self._seed))
+        print('SYSTEM INFO: initializing server...')
+        self.server = Server.Server(self._lr, ServerModel.ServerModel(model_features_mapping, self._embedding, self._seed))
+        print('SYSTEM INFO: server initialized\n')
 
-        print('creating clients')
+
+        print('SYSTEM INFO: initializing clients...\n')
         self.clients = [
             Client.Client(c, ClientModel.ClientModel(self._embedding),
                           self._data.i_train_dict[c], self.user_feature_mapper.client_features[c],
                           model_features_mapping, self._upc,
                           self.item_features_mask, self._seed) for c in tqdm(client_ids)]
-
-        print(f"\nINFO: clients created\n")
+        print(f"\nSYSTEM INFO: {len(self.clients)} clients initialized\n")
 
     @property
     def name(self):

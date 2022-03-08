@@ -68,7 +68,7 @@ class UserFeatureMapper:
         arguments = args()
         pool = Pool(processes=self._n_procs)
         results = pool.starmap(user_feature_weights,
-                               tqdm.tqdm(arguments, total=len(client_ids), desc='clients features weights'))
+                               tqdm.tqdm(arguments, total=len(client_ids), desc='users features weights'))
         pool.close()
         pool.join()
 
@@ -85,7 +85,7 @@ class UserFeatureMapper:
             item_features=self.item_features,
             predicates=self.predicates,
             limits=self.limits)
-            for c in tqdm.tqdm(client_ids, desc='clients features weights')}
+            for c in tqdm.tqdm(client_ids, desc='users features weights')}
 
 
 def user_feature_weights(positive_items, total_negative_items, npr, item_features, predicates, limits):
