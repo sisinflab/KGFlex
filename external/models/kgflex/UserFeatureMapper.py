@@ -5,7 +5,7 @@ from itertools import islice
 from operator import itemgetter
 from collections import OrderedDict, Counter
 import pandas as pd
-from multiprocessing import Process, Queue, cpu_count, Pool
+from multiprocessing import cpu_count, Pool
 import multiprocessing
 
 multiprocessing.set_start_method("fork")
@@ -15,7 +15,7 @@ import tqdm
 
 class UserFeatureMapper:
     def __init__(self, data, item_features, predicate_mapping: pd.DataFrame,
-                 n_first_order_features, n_second_order_features, npr=1, n_procs=None, random_seed=42, depth=2):
+                 n_first_order_features, n_second_order_features, npr=1, n_procs=None, random_seed=42, depth=2, weight_type='info_gain'):
 
         # set random seeds
         np.random.seed(random_seed)
@@ -47,15 +47,17 @@ class UserFeatureMapper:
         self.client_features = dict()
         self.item_features = item_features
         self.npr = npr
+        print(f'USER FEATURE MAPPPER: negative-positive ratio set to {npr}')
+        self.weight_type = weight_type
 
     def user_feature_weights(self, client_ids):
 
         if self._n_procs == 1:
             return self.get_user_feature_weights(client_ids)
         else:
-            return self.get_user_feature_weights_MP(client_ids)
+            return self.get_user_feature_weights_mp(client_ids)
 
-    def get_user_feature_weights_MP(self, client_ids):
+    def get_user_feature_weights_mp(self, client_ids):
 
         def args():
             return ((set(self._data.i_train_dict[c].keys()),
@@ -63,7 +65,8 @@ class UserFeatureMapper:
                      self.npr,
                      self.item_features,
                      self.predicates,
-                     self.limits) for c in client_ids)
+                     self.limits,
+                     self.weight_type) for c in client_ids)
 
         arguments = args()
         pool = Pool(processes=self._n_procs)
@@ -84,18 +87,19 @@ class UserFeatureMapper:
             npr=self.npr,
             item_features=self.item_features,
             predicates=self.predicates,
-            limits=self.limits)
+            limits=self.limits,
+            weight_type=self.weight_type)
             for c in tqdm.tqdm(client_ids, desc='users features weights')}
 
 
-def user_feature_weights(positive_items, total_negative_items, npr, item_features, predicates, limits):
+def user_feature_weights(positive_items, total_negative_items, npr, item_features, predicates, limits, weight_type='info_gain'):
     # select client negative items
     negative_items = random_pick(total_negative_items, len(positive_items) * npr, strategy='popularity')
     # count features
     pos_counter, neg_counter = user_features_counter(positive_items, negative_items, item_features)
     # compute information metric over features
     features = compute_feature_weights(pos_counter, neg_counter, predicates, len(positive_items),
-                                       len(positive_items) * npr, limits=limits)
+                                       len(positive_items) * npr, limits=limits, weight_type=weight_type)
     # return client features
     return features
 
@@ -166,8 +170,10 @@ def gini_impurity(positive, negative, total):
     # p_positive = positive / total
     # p_negative = negative / total
     # 1 - p_positive = p_negative | 1 - p_negative = p_positive
-
-    return 2 * positive * negative / (total ** 2)
+    if total == 0:
+        return 0
+    else:
+        return 2 * positive * negative / (total ** 2)
 
 
 def feature_gini(positive_counter, negative_counter, n_positive_items, n_negative_items=None, threshold=0):
@@ -183,16 +189,22 @@ def feature_gini(positive_counter, negative_counter, n_positive_items, n_negativ
     # equivalent formulation of total
     total = n_negative_items * 2
 
-    feature_ginis = dict()
-    for feature in set.union(set(positive_counter), set(negative_counter)):
-        gini = gini_impurity(positive_counter[feature] / ratio, negative_counter[feature], total)
+    feature_gini = dict()
+    # assumption: n positive items == n negative items -> gini = 2 * 1/2 * 1/2 = 0.5
+    total_gini = 0.5
+
+#    for feature in set.union(set(positive_counter), set(negative_counter)):
+    for feature in set(positive_counter):
+        pos = positive_counter[feature] / ratio
+        neg = negative_counter[feature]
+        p = (pos + neg) / total
+
+        gini = total_gini - p * gini_impurity(pos, neg, pos + neg) - (1-p) * gini_impurity(n_negative_items - pos, n_negative_items - neg, total - (pos + neg))
         if gini > threshold:
-            feature_ginis[feature] = gini
+            feature_gini[feature] = gini
+    return feature_gini
 
-    return feature_ginis
 
-
-# TODO: try an easier formulation that considers the specific two classes case
 def info_gain(positive, negative, n_positive_items, n_negative_items=None):
     def relative_gain(partial, total):
         if total == 0:
@@ -208,14 +220,14 @@ def info_gain(positive, negative, n_positive_items, n_negative_items=None):
 
     den_1 = positive + negative
 
-    h_pos = relative_gain(positive, den_1) + relative_gain(negative, den_1)
+    h_present = relative_gain(positive, den_1) + relative_gain(negative, den_1)
     den_2 = n_positive_items + n_negative_items - (positive + negative)
 
     num_1 = n_positive_items - positive
     num_2 = n_negative_items - negative
-    h_neg = relative_gain(num_1, den_2) + relative_gain(num_2, den_2)
+    h_absent = relative_gain(num_1, den_2) + relative_gain(num_2, den_2)
 
-    return 1 - den_1 / (den_1 + den_2) * h_pos - den_2 / (den_1 + den_2) * h_neg
+    return 1 - den_1 / (den_1 + den_2) * h_present - den_2 / (den_1 + den_2) * h_absent
 
 
 def feature_info_gain(positive_counter, negative_counter, n_positive_items, n_negative_items=None, threshold=0):
