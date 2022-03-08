@@ -5,11 +5,11 @@ from itertools import islice
 from operator import itemgetter
 from collections import OrderedDict, Counter
 import pandas as pd
-from multiprocessing import Process, Queue, cpu_count
+from multiprocessing import Process, Queue, cpu_count, Pool
 import multiprocessing
 
+multiprocessing.set_start_method("fork")
 
-# multiprocessing.set_start_method("fork")
 import tqdm
 
 
@@ -38,11 +38,42 @@ class UserFeatureMapper:
 
         # number of parallel processes
         if n_procs is None:
-            self._n_procs = cpu_count()
+            n_procs = cpu_count()
+        self._n_procs = n_procs
+
+        assert n_procs > 0
+
         # declaring variables
         self.client_features = dict()
         self.item_features = item_features
         self.npr = npr
+
+    def user_feature_weights(self, client_ids):
+
+        if self._n_procs == 1:
+            return self.get_user_feature_weights(client_ids)
+        else:
+            return self.get_user_feature_weights_MP(client_ids)
+
+    def get_user_feature_weights_MP(self, client_ids):
+
+        def args():
+            return ((set(self._data.i_train_dict[c].keys()),
+                     set.difference(self._items, self._data.i_train_dict[c].keys()),
+                     self.npr,
+                     self.item_features,
+                     self.predicates,
+                     self.limits) for c in client_ids)
+
+        arguments = args()
+        pool = Pool(processes=self._n_procs)
+        results = pool.starmap(user_feature_weights,
+                               tqdm.tqdm(arguments, total=len(client_ids), desc='clients features weights'))
+        pool.close()
+        pool.join()
+
+        for c, i in enumerate(client_ids):
+            self.client_features[c] = results[i]
 
     def get_user_feature_weights(self, client_ids):
 
@@ -92,7 +123,6 @@ def user_features_counter(positive_items, negative_items, item_features_):
 
 def compute_feature_weights(positive_counter, negative_counter, predicates, n_positive_items, n_negative_items,
                             limits, depth=2, weight_type='info_gain'):
-
     assert len(limits) == depth
 
     # split first and second order features
@@ -112,7 +142,8 @@ def compute_feature_weights(positive_counter, negative_counter, predicates, n_po
 
     selected_pos_counter = Counter({f: positive_counter[f] for f in selected_features})
     selected_neg_counter = Counter({f: negative_counter[f] for f in selected_features})
-    return feature_weight(selected_pos_counter, selected_neg_counter, n_positive_items, n_negative_items, type_=weight_type)
+    return feature_weight(selected_pos_counter, selected_neg_counter, n_positive_items, n_negative_items,
+                          type_=weight_type)
 
 
 def feature_weight(positive_counter, negative_counter, n_positive_items, n_negative_items, type_='info_gain',
@@ -199,7 +230,7 @@ def feature_info_gain(positive_counter, negative_counter, n_positive_items, n_ne
 
     feature_igs = dict()
     # TODO: select negative features?
-    #for feature in set.union(set(positive_counter), set(negative_counter)):
+    # for feature in set.union(set(positive_counter), set(negative_counter)):
     for feature in set(positive_counter):
         ig = info_gain(positive_counter[feature] / ratio, negative_counter[feature], n_negative_items,
                        n_negative_items)

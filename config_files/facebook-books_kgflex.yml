@@ -32,6 +32,6 @@ experiment:
       epochs: 100
       q: 0.1
       embedding: [1, 10, 100]
-      parallel_ufm: 48
+      parallel_ufm: 2
       first_order_limit: [0, 10, 100]
       second_order_limit: [0, 10, 100]

@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from scipy.sparse import csr_matrix
 from tqdm import tqdm
@@ -27,10 +29,12 @@ class KGFlex(RecMixin, BaseRecommenderModel):
             ("_second_order_limit", "second_order_limit", "sol", -1, None, None),
             ("_centralized", "centralized", "centralized", -1, None, None),
             ("_batch_size", "batch_size", "batch_size", 1024, int, None),
-            ("_seed", "seed", "seed", 42, None, None)
+            ("_seed", "seed", "seed", 42, None, None),
+            ("_npr", "npr", "negative_positive_ratio", 1, None, None)
         ]
         self.autoset_params()
         np.random.seed(self._seed)
+        random.seed(self._seed)
 
         training_set = self._data.train_pd
         self.transactions = len(training_set)
@@ -52,9 +56,13 @@ class KGFlex(RecMixin, BaseRecommenderModel):
                                                      self.item_features_mapper,
                                                      self._data.side_information_data.predicate_mapping,
                                                      self._first_order_limit,
-                                                     self._second_order_limit)
+                                                     self._second_order_limit,
+                                                     npr=self._npr,
+                                                     random_seed=self._seed,
+                                                     n_procs=self._parallel_ufm,
+                                                     depth=2)
         client_ids = list(self._data.i_train_dict.keys())
-        self.user_feature_mapper.get_user_feature_weights(client_ids)
+        self.user_feature_mapper.get_user_feature_weights_MP(client_ids)
 
         # ------------------------------ MODEL FEATURES ------------------------------
         print('features mapping')
