@@ -13,14 +13,16 @@ experiment:
     strategy: iterative_k_core
     core: 5
   splitting:
+    save_on_disk: True
+    save_folder: ../data/{0}/split/
     test_splitting:
-        strategy: random_subsampling
-        test_ratio: 0.2
+      strategy: random_subsampling
+      test_ratio: 0.2
   top_k: 10
   gpu: 1
   external_models_path: ../external/models/__init__.py
   evaluation:
-    cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    cutoffs: 10
     simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC]
   models:
     external.KGFlex:
@@ -28,6 +30,8 @@ experiment:
         verbose: True
         validation_rate: 10
         save_recs: True
+        save_weights: False
+        restore: False
       lr: [0.1, 0.01, 0.001]
       epochs: 300
       q: 0.1
@@ -38,4 +42,3 @@ experiment:
       npr: [2, 10]
       seed: 64
       criterion: [infogain, gini]
-      batch_size: 1024
