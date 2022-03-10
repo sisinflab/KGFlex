@@ -30,7 +30,7 @@ class KGFlex(RecMixin, BaseRecommenderModel):
             ("_batch_size", "batch_size", "batch_size", 1024, int, None),
             ("_seed", "seed", "seed", 42, None, None),
             ("_npr", "npr", "npr", 1, None, None),
-            ("_weight", "weight", "w", 'info_gain', None, None)
+            ("_criterion", "criterion", "c", 'info_gain', str, None)
         ]
         self.autoset_params()
         np.random.seed(self._seed)
@@ -60,7 +60,7 @@ class KGFlex(RecMixin, BaseRecommenderModel):
                                                      random_seed=self._seed,
                                                      n_procs=self._parallel_ufm,
                                                      depth=2,
-                                                     weight_type=self._weight)
+                                                     criterion=self._criterion)
         client_ids = list(self._data.i_train_dict.keys())
         self.user_feature_mapper.user_feature_weights(client_ids)
         print('USER FEATURES: user features loaded\n')

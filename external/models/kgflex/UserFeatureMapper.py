@@ -8,14 +8,16 @@ import pandas as pd
 from multiprocessing import cpu_count, Pool
 import multiprocessing
 
-multiprocessing.set_start_method("fork")
+from sys import platform
+if platform == 'darwin':
+    multiprocessing.set_start_method("fork")
 
 import tqdm
 
 
 class UserFeatureMapper:
     def __init__(self, data, item_features, predicate_mapping: pd.DataFrame,
-                 n_first_order_features, n_second_order_features, npr=1, n_procs=None, random_seed=42, depth=2, weight_type='info_gain'):
+                 n_first_order_features, n_second_order_features, npr=1, n_procs=None, random_seed=42, depth=2, criterion='info_gain'):
 
         # set random seeds
         np.random.seed(random_seed)
@@ -48,7 +50,7 @@ class UserFeatureMapper:
         self.item_features = item_features
         self.npr = npr
         print(f'USER FEATURE MAPPPER: negative-positive ratio set to {npr}')
-        self.weight_type = weight_type
+        self.criterion = criterion
 
     def user_feature_weights(self, client_ids):
 
@@ -66,7 +68,7 @@ class UserFeatureMapper:
                      self.item_features,
                      self.predicates,
                      self.limits,
-                     self.weight_type) for c in client_ids)
+                     self.criterion) for c in client_ids)
 
         arguments = args()
         pool = Pool(processes=self._n_procs)
@@ -88,7 +90,7 @@ class UserFeatureMapper:
             item_features=self.item_features,
             predicates=self.predicates,
             limits=self.limits,
-            weight_type=self.weight_type)
+            weight_type=self.criterion)
             for c in tqdm.tqdm(client_ids, desc='users features weights')}
 
 
@@ -129,25 +131,23 @@ def compute_feature_weights(positive_counter, negative_counter, predicates, n_po
                             limits, depth=2, weight_type='info_gain'):
     assert len(limits) == depth
 
-    # split first and second order features
+    # split features (in positive and negative items) respect to their depth
     pos = [Counter({f: c for f, c in positive_counter.items() if f[0] in predicates[d]}) for d in range(depth)]
     neg = [Counter({f: c for f, c in negative_counter.items() if f[0] in predicates[d]}) for d in range(depth)]
 
     # select best features for each exploration depth
-    selected_features = []
+    selected_features = OrderedDict()
     for d, limit in zip(range(depth), limits):
-        # TODO: if we have to consider also negative features, here it is needed to add len(neg[depth])
         if limit == -1 or limit >= len(pos[d]):
             # select all
-            selected_features.extend(pos[d].keys())
-        else:
             features = feature_weight(pos[d], neg[d], n_positive_items, n_negative_items, type_=weight_type)
-            selected_features.extend(dict(islice(features.items(), limit)).keys())
+        else:
+            # select top-limit features
+            features = feature_weight(pos[d], neg[d], n_positive_items, n_negative_items, type_=weight_type)
+            features = OrderedDict(islice(features.items(), limit))
+        selected_features.update(features)
 
-    selected_pos_counter = Counter({f: positive_counter[f] for f in selected_features})
-    selected_neg_counter = Counter({f: negative_counter[f] for f in selected_features})
-    return feature_weight(selected_pos_counter, selected_neg_counter, n_positive_items, n_negative_items,
-                          type_=weight_type)
+    return selected_features
 
 
 def feature_weight(positive_counter, negative_counter, n_positive_items, n_negative_items, type_='info_gain',
@@ -241,8 +241,7 @@ def feature_info_gain(positive_counter, negative_counter, n_positive_items, n_ne
     # weighted value of n_positive_items = n_positive_items / ratio = n_negative_items
 
     feature_igs = dict()
-    # TODO: select negative features?
-    # for feature in set.union(set(positive_counter), set(negative_counter)):
+
     for feature in set(positive_counter):
         ig = info_gain(positive_counter[feature] / ratio, negative_counter[feature], n_negative_items,
                        n_negative_items)
