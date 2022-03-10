@@ -17,7 +17,7 @@ import tqdm
 
 class UserFeatureMapper:
     def __init__(self, data, item_features, predicate_mapping: pd.DataFrame,
-                 n_first_order_features, n_second_order_features, npr=1, n_procs=None, random_seed=42, depth=2, criterion='info_gain'):
+                 n_first_order_features, n_second_order_features, npr=1, n_procs=0, random_seed=42, depth=2, criterion='info_gain'):
 
         # set random seeds
         np.random.seed(random_seed)
@@ -39,7 +39,7 @@ class UserFeatureMapper:
         assert depth == len(self.predicates)
 
         # number of parallel processes
-        if n_procs is None:
+        if n_procs == 0:
             n_procs = cpu_count() - 1
         self._n_procs = n_procs
         assert n_procs > 0
