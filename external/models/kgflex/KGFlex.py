@@ -23,7 +23,7 @@ class KGFlex(RecMixin, BaseRecommenderModel):
             ("_lr", "lr", "lr", 0.01, None, None),
             ("_upc", "updates_per_client", "upc", None, None, None),
             ("_embedding", "embedding", "em", 10, int, None),
-            ("_parallel_ufm", "parallel_ufm", "pufm", 8, int, None),
+            ("_parallel_ufm", "parallel_ufm", "pufm", None, int, None),
             ("_first_order_limit", "first_order_limit", "fol", -1, None, None),
             ("_second_order_limit", "second_order_limit", "sol", -1, None, None),
             ("_centralized", "centralized", "centralized", -1, None, None),
