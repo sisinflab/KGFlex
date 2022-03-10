@@ -40,7 +40,7 @@ class UserFeatureMapper:
 
         # number of parallel processes
         if n_procs is None:
-            n_procs = cpu_count()
+            n_procs = cpu_count() - 1
         self._n_procs = n_procs
         assert n_procs > 0
         print(f'USER FEATURE MAPPER: {n_procs} parallel processes')
