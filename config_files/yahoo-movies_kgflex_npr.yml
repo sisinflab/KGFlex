@@ -14,22 +14,20 @@ experiment:
     core: 5
   splitting:
     test_splitting:
-      save_on_disk: True
-      save_folder: ./data/{0}/
       strategy: random_subsampling
       test_ratio: 0.2
   top_k: 10
   gpu: 1
   external_models_path: ../external/models/__init__.py
   evaluation:
-    cutoffs: 10
+    cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
     simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC]
   models:
     external.KGFlex:
       meta:
         verbose: True
-        validation_rate: 10
-        save_recs: True
+        validation_rate: 5
+        save_recs: False
         save_weights: False
         restore: False
       lr: [0.1, 0.01, 0.001]
