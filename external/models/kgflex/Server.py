@@ -13,10 +13,10 @@ class Server:
         self.lr = lr
         # self.predictor = Predictor()
 
-    def train_model(self, clients):
+    def train_model(self, clients, epoch=0):
         tmp_feature_vecs = np.zeros(self.model.feature_vecs.shape)
         tmp_feature_bias = np.zeros(self.model.feature_bias.shape)
-        for c in tqdm(clients):
+        for c in tqdm(clients, desc=f'epoch: {epoch}'):
             client_update = c.train(self.lr, self.model)
             tmp_feature_vecs += client_update[0]
             tmp_feature_bias += client_update[1]

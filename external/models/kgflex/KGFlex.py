@@ -113,7 +113,7 @@ class KGFlex(RecMixin, BaseRecommenderModel):
             else:
                 selected_clients = list(
                     np.random.choice(self.clients, math.ceil(self._q * len(self.clients)), replace=False))
-                self.server.train_model(selected_clients)
+                self.server.train_model(selected_clients, epoch=it+1)
             self.evaluate(it)
 
     def get_recommendations(self, k: int = 100):
