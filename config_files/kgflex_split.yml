@@ -1,5 +1,5 @@
 experiment:
-  dataset: facebook-books
+  dataset: yahoo-movies
   data_config:
     strategy: dataset
     dataset_path: ../data/{0}/dataset.tsv
@@ -11,7 +11,7 @@ experiment:
       predicates: ../data/{0}/predicate_mapping.tsv
   prefiltering:
     strategy: iterative_k_core
-    core: 5
+    core: 10
   splitting:
     save_on_disk: True
     save_folder: ../data/{0}/split/

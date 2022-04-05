@@ -68,7 +68,8 @@ class UserFeatureMapper:
                      self.item_features,
                      self.predicates,
                      self.limits,
-                     self.criterion) for c in client_ids)
+                     self.criterion,
+                     random.randint(0, 100000)) for c in client_ids)
 
         arguments = args()
         pool = Pool(processes=self._n_procs)
@@ -94,7 +95,8 @@ class UserFeatureMapper:
             for c in tqdm.tqdm(client_ids, desc='users features weights')}
 
 
-def user_feature_weights(positive_items, total_negative_items, npr, item_features, predicates, limits, weight_type='info_gain'):
+def user_feature_weights(positive_items, total_negative_items, npr, item_features, predicates, limits, weight_type='info_gain', seed=42):
+    random.seed(seed)
     # select client negative items
     negative_items = random_pick(total_negative_items, len(positive_items) * npr, strategy='popularity')
     # count features
@@ -134,7 +136,6 @@ def compute_feature_weights(positive_counter, negative_counter, predicates, n_po
     # split features (in positive and negative items) respect to their depth
     pos = [Counter({f: c for f, c in positive_counter.items() if f[0] in predicates[d]}) for d in range(depth)]
     neg = [Counter({f: c for f, c in negative_counter.items() if f[0] in predicates[d]}) for d in range(depth)]
-
     # select best features for each exploration depth
     selected_features = OrderedDict()
     for d, limit in zip(range(depth), limits):
