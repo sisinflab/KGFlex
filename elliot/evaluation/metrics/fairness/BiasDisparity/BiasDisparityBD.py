@@ -97,8 +97,8 @@ class BiasDisparityBD(BaseMetric):
         :return: the overall value of Bias Disparity
         """
 
-        BR = BiasDisparityBR(self._recommendations, self._config, self._params, self._evaluation_objects, self._additional_data).get_BR()
         BS = BiasDisparityBS(self._recommendations, self._config, self._params, self._evaluation_objects, self._additional_data).get_BS()
+        BR = BiasDisparityBR(self._recommendations, self._config, self._params, self._evaluation_objects, self._additional_data).get_BR()
 
         BD = (BR - BS) / BS
 

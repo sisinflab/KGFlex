@@ -52,10 +52,18 @@ class BiasDisparityBR(BaseMetric):
         self._item_clustering_path = self._additional_data.get("item_clustering_file", False)
 
         if self._item_clustering_path:
-            self._item_clustering = pd.read_csv(self._item_clustering_path, sep="\t", header=None)
-            self._item_n_clusters = self._item_clustering[1].nunique()
-            self._item_clustering = dict(zip(self._item_clustering[0], self._item_clustering[1]))
+            #self._item_clustering = pd.read_csv(self._item_clustering_path, sep="\t", header=None)
+            # self._item_n_clusters = self._item_clustering[1].nunique()
+            # self._item_clustering = dict(zip(self._item_clustering[0], self._item_clustering[1]))
+            # self._item_clustering_name = self._additional_data['item_clustering_name']
+
+            self._item_clustering_df = pd.read_csv(self._item_clustering_path, sep="\t", header=None)
+            self._item_n_clusters = self._item_clustering_df[1].nunique()
+            self._item_clustering = dict()
+            for i, c in zip(self._item_clustering_df[0], self._item_clustering_df[1]):
+                self._item_clustering.setdefault(i, []).append(c)
             self._item_clustering_name = self._additional_data['item_clustering_name']
+
         else:
             self._item_n_clusters = 1
             self._item_clustering = {}
@@ -97,7 +105,8 @@ class BiasDisparityBR(BaseMetric):
             for i, _ in user_recommendations[:cutoff]:
                 item_category = self._item_clustering.get(i, None if self._item_clustering else 0)
                 if item_category is not None:
-                    self._category_sum[user_group,item_category] += 1
+                    for c in item_category:
+                        self._category_sum[user_group, c] += 1
                     self._total_sum[user_group] += 1
 
     def eval(self):
@@ -112,9 +121,14 @@ class BiasDisparityBR(BaseMetric):
         for u, u_r in self._recommendations.items():
             self.__item_bias_disparity_br(u, u_r, self._cutoff)
 
-        clustering_count = Counter(self._item_clustering.values())
+        #clustering_count = Counter(self._item_clustering.values())
+        #PC = np.array([clustering_count.get(c, 0)/ len(self._item_clustering) if self._item_clustering else 1 for c in range(self._item_n_clusters)])
+        #self._BR = ((self._category_sum.T/self._total_sum).T)/PC
+
+        clustering_count = Counter([f for v in self._item_clustering.values() for f in v])
+        PR = self._category_sum / self._total_sum
         PC = np.array([clustering_count.get(c, 0)/ len(self._item_clustering) if self._item_clustering else 1 for c in range(self._item_n_clusters)])
-        self._BR = ((self._category_sum.T/self._total_sum).T)/PC
+        self._BR = PR/PC
 
         self._metric_objs_list = []
         for u_group in range(self._user_n_clusters):
