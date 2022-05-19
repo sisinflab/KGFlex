@@ -1,3 +1,5 @@
+import tqdm
+
 from .UserFeatureMapper import UserFeatureMapper
 from collections import defaultdict
 import numpy as np
@@ -63,11 +65,14 @@ class SemanticsAnalyzer(RecMixin, BaseRecommenderModel):
         pred = pd.read_csv(self._predicate_mapping, names=['p', 'id', 'order'], sep="\t")
         obj = pd.read_csv(self._object_mapping, names=['o', 'id'], sep="\t")
 
-        for c, user_id in enumerate(client_ids):
-            print(c)
+        # for c, user_id in tqdm.tqdm(enumerate(client_ids), total=client_ids):
+        #     for i, v in enumerate(self.user_feature_mapper.client_features[user_id]):
+        #         feat['<' + ', '.join(el.split('/')[-1] for el in pred.loc[v[0]]['p'].split('~')) + ', ' +
+        #            obj.loc[v[1]]['o'].split('/')[-1].split(':')[-1] + '>'] += self.user_feature_mapper.client_features[user_id][v]
+
+        for c, user_id in tqdm.tqdm(enumerate(client_ids), total=client_ids):
             for i, v in enumerate(self.user_feature_mapper.client_features[user_id]):
-                feat['<' + ', '.join(el.split('/')[-1] for el in pred.loc[v[0]]['p'].split('~')) + ', ' +
-                   obj.loc[v[1]]['o'].split('/')[-1].split(':')[-1] + '>'] += self.user_feature_mapper.client_features[user_id][v]
+                feat[v] += self.user_feature_mapper.client_features[user_id][v]
 
         k = pd.DataFrame.from_dict(feat, orient="index")
         k[0] = k[0].apply(lambda x: int(x * 100))

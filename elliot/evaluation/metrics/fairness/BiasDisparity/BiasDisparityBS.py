@@ -120,7 +120,8 @@ class BiasDisparityBS(BaseMetric):
         #clustering_count = Counter(self._item_clustering.values())
         clustering_count = Counter([f for v in self._item_clustering.values() for f in v])
         PR = self._category_sum/self._total_sum
-        PC = np.array([clustering_count.get(c, 0)/ len(self._item_clustering) if self._item_clustering else 1 for c in range(self._item_n_clusters)])
+        # self._item_clustering = number of items
+        PC = np.array([clustering_count.get(c, 0) / len(self._item_clustering) if self._item_clustering else 1 for c in range(self._item_n_clusters)])
         self._BS = PR/PC
 
         self._metric_objs_list = []

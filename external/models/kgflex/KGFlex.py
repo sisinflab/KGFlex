@@ -74,6 +74,7 @@ class KGFlex(RecMixin, BaseRecommenderModel):
                 _ = model_features_mapping[feature]
         print(f'MODEL FEATURES: {len(model_features_mapping)} features mapped')
 
+
         # total number of features (i.e. columns of the item matrix / latent factors)
         item_features_mask = []
         for _, v in self.item_features_mapper.items():
