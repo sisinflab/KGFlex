@@ -1,7 +1,7 @@
 # KGFlex: a Knowledge-Aware Hybrid Recommender System
 
 This is the official implementation of the paper
-*Sparse Feature Factorization for Recommender Systems with Knowledge Graphs*.
+*Efficient Recommendation with Sparse Feature Factorization and Knowledge Graphs* submitted to *ACM Transactions on Recommender Systems*.
 
 
 ## Description
@@ -43,14 +43,14 @@ Here we describe the steps to reproduce the results presented in the paper. Furt
 ### Reproduce Paper Results
 
 [Here](run.py) you can find a ready-to-run Python file with all the pre-configured experiments cited in our paper.
-The experiments shown in the paper have been run with Python 3.6.9.
+The experiments shown in the paper have been run with Python 3.8.
 You can easily run them with the following command:
 
 ```
 python run.py
 ```
 
-It trains our KGFlex model and the other baseline models with the three different datasets and, with one of them, also performs the semantic analysis.
+It trains our KGFlex model and the other baseline models with the three different datasets, with the exact hyperparameter space explored in the paper.
 A description of the datasets is provided [here](#datasets), while a comprehensive list of KGFlex parameters is available [here](#).
 
 The results will be stored in the folder ```results/DATASET/```. Both the recommendation lists and the performance can be stored, depending on how the experiment is configured.
@@ -82,27 +82,33 @@ experiment:
     core: 5
   splitting:
     test_splitting:
-        strategy: random_subsampling
-        test_ratio: 0.2
+      strategy: random_subsampling
+      test_ratio: 0.2
   top_k: 10
   gpu: 1
   external_models_path: ../external/models/__init__.py
   evaluation:
     cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-    simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC]
+    simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC, PopREO, PopRSP, ACLT, APLT, ARP]
   models:
     external.KGFlex:
       meta:
         verbose: True
         validation_rate: 10
-        save_recs: True
-      lr: [0.1, 0.01, 0.001]
-      epochs: 100
+        save_recs: False
+        save_weights: False
+        restore: False
+      lr: [0.1]
+      epochs: 300
       q: 0.1
-      embedding: [1, 10, 100]
-      parallel_ufm: 48
-      first_order_limit: [0, 10, 100]
-      second_order_limit: [0, 10, 100]
+      embedding: [5]
+      parallel_ufm: 4
+      first_order_limit: [100, 200, 400, -1]
+      second_order_limit: [100, 200, 400, -1]
+      npr: [1, 2, 10, 20]
+      seed: 64
+      criterion: [infogain, gini]
+      batch_size: 1024
  ```
 
 Each model requires specific parameters: a brief overview of KGFlex parameters is provided [here](#kgflex-parameters).
@@ -131,3 +137,7 @@ The following are the parameters required by our KGFlex model:
 - ```parallel_ufm```: number of parallel processes that will be executed during the user feature mapping operation.
 - ```first_order_limit```: max number of first order features for each user model
 - ```second_order_limit```: max number of second order features for each user model
+- ```npr```: stands for negative-positive ratio. Coincides with the parameter η
+- ```seed```: is the random seed
+- ```criterion```: type of the strategy for modeling the user choice. It could be Information Gain or Gini Gain
+- ```batch_size```: number of updates for each batch of the Gradient Descent
