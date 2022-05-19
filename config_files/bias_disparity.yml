@@ -1,0 +1,36 @@
+experiment:
+  dataset: facebook-books
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/dataset.tsv
+    dataloader: KGFlexLoader
+    side_information:
+      work_directory: ../data/{0}
+      map: ../data/{0}/mapping.tsv
+      features: ../data/{0}/item_features.tsv
+      predicates: ../data/{0}/predicate_mapping.tsv
+  prefiltering:
+    strategy: iterative_k_core
+    core: 5
+  splitting:
+    test_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.2
+  top_k: 10
+  gpu: 1
+  external_models_path: ../external/models/__init__.py
+  evaluation:
+    cutoffs: 10
+    simple_metrics: nDCGRendle2020
+    complex_metrics:
+      - metric: BiasDisparityBD
+        item_clustering_name: Features
+        item_clustering_file: ../data/facebook-books/item_features_mapped.tsv
+  models:
+    external.ProxyRecommender:
+      meta:
+        save_recs: True
+      # you need to run KGFlex best models and store the recs file
+      # then insert here the path of the recs stored by elliot (result -> dataset -> recs)
+      # NOTE: the best recs are the last saved (with the higher iteration value)
+      path: best/recs/path
