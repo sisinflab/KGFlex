@@ -3,6 +3,7 @@
 This is the official implementation of the paper
 *Sparse Feature Factorization for Recommender Systems with Knowledge Graphs*.
 
+The official implementation of the extension paper *Efficient Recommendation with Sparse Feature Factorization and Knowledge Graphs* submitted to *ACM Transactions on Recommender Systems* could be found the branch *tors* or clicking on this [link](https://github.com/sisinflab/KGFlex/tree/tors).
 
 ## Description
 
