@@ -2,7 +2,7 @@ experiment:
   dataset: facebook-books
   data_config:
     strategy: dataset
-    dataset_path: ../data/{0}/KGFlex
+    dataset_path: ../data/{0}/dataset.tsv
     dataloader: KGFlexLoader
     side_information:
       work_directory: ../data/{0}
