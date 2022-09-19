@@ -1,0 +1,118 @@
+experiment:
+  dataset: yahoo-movies
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/dataset.tsv
+    dataloader: KGFlexLoader
+    side_information:
+      work_directory: ../data/{0}
+      map: ../data/{0}/mapping.tsv
+      features: ../data/{0}/item_features.tsv
+      predicates: ../data/{0}/predicate_mapping.tsv
+  prefiltering:
+    strategy: iterative_k_core
+    core: 10
+  splitting:
+    test_splitting:
+        strategy: random_subsampling
+        test_ratio: 0.2
+  top_k: 10
+  gpu: 1
+  external_models_path: ../external/models/__init__.py
+  evaluation:
+    cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC]
+    relevance_threshold: 3
+  models:
+    Random:
+      meta:
+        verbose: True
+        save_recs: True
+      seed: 42
+    external.MostPop:
+      meta:
+        verbose: True
+        save_recs: True
+    external.ItemKNN:
+      meta:
+        validation_rate: 1
+        save_recs: True
+        verbose: True
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
+      neighbors: [uniform, 5, 700]
+      similarity: cosine
+      implementation: standard
+    VSM:
+      meta:
+        save_recs: True
+      similarity: cosine
+      user_profile: tfidf
+      item_profile: tfidf
+    MultiVAE:
+      meta:
+        save_recs: True
+        verbose: True
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
+        validation_rate: 1
+      epochs: 200
+      batch_size: 512
+      intermediate_dim: 600
+      latent_dim: 200
+      reg_lambda: [loguniform, -11.512925464970229, 0]
+      lr: [loguniform, -11.512925464970229, 0]
+      dropout_pkeep: 0.5
+    external.NeuMF:
+      meta:
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
+        validation_rate: 1
+        save_recs: True
+      lr: [loguniform, -10, -1]
+      batch_size: 512
+      epochs: 50
+      mf_factors: [quniform, 8, 32, 1]
+      mlp_factors: [8, 16]
+      mlp_hidden_size: [(32, 16, 8), (64, 32, 16)]
+      prob_keep_dropout: 1
+      is_mf_train: True
+      is_mlp_train: True
+    BPRMF:
+      meta:
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
+        validation_rate: 1
+        verbose: True
+        save_recs: True
+      lr: [0.001, 0.003, 0.01]
+      batch_size: [128, 256, 512]
+      epochs: 50
+      bias_regularization: 0
+      reg: [0.001, 0.003, 0.01]
+      factors: [16, 64, 256]
+    external.RendleMF:
+      meta:
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
+        validation_rate: 1
+        verbose: True
+        save_recs: True
+      epochs: 50
+      factors: [16, 64, 256]
+      lr: [0.001, 0.003, 0.01]
+      reg: [0.001, 0.003, 0.01]
+      m: 4
+    KaHFMEmbeddings:
+      meta:
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
+        validation_rate: 1
+        verbose: True
+        save_weights: True
+        save_recs: True
+      epochs: 100
+      batch_size: 512
+      lr: [loguniform, -10, -1]
+      l_w: [0.001, 0.003, 0.01]
+      l_b: 0
