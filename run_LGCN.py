@@ -1,7 +1,9 @@
 from elliot.run import run_experiment
 import os
 
-path = ["config_files/yahoo_LGCN_ext.yml"]
+path = ["config_files_lgcn/yahoo_LGCN.yml",
+        "config_files_lgcn/facebook-books_LGCN.yml",
+        "config_files_lgcn/ml_LGCN.yml"]
 
 for p in path:
     assert os.path.exists(p)
