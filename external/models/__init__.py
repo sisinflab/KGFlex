@@ -5,3 +5,4 @@ from .RendleMF_NeuMFvsMF import RendleMF
 from .NeuMF import NeuMF
 from .item_knn import ItemKNN
 from .Proxy import ProxyRecommender
+from .lightgcn import LightGCN

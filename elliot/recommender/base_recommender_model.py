@@ -60,6 +60,7 @@ class BaseRecommenderModel(ABC):
             raise Exception(f"The first validation epoch ({self._validation_rate}) "
                             f"is later than the overall number of epochs ({self._epochs}).")
         self._batch_size = getattr(self._params, "batch_size", -1)
+        self._seed = getattr(self._params, "seed", 42)
 
 
         self.best_metric_value = 0
@@ -67,6 +68,13 @@ class BaseRecommenderModel(ABC):
         self._losses = []
         self._results = []
         self._params_list = []
+
+    def get_base_params_shortcut(self):
+        return "_".join([str(k) + "=" + str(v).replace(".", "$") for k, v in
+                         dict({"seed": self._seed,
+                               "e": self._epochs,
+                               "bs": self._batch_size}).items()
+                         ])
 
     def get_params_shortcut(self):
         return "_".join([str(p[2])+":"+ str(p[5](getattr(self, p[0])) if p[5] else getattr(self, p[0])) for p in self._params_list])
