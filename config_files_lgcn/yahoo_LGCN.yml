@@ -26,15 +26,14 @@ experiment:
   models:
     external.LightGCN:
       meta:
+        hyper_max_evals: 10
+        hyper_opt_alg: tpe
         validation_rate: 1
-        verbose: True
-        save_weights: False
-        save_recs: False
-        validation_metric: nDCG
-        restore: False
-      lr: 0.001
-      epochs: 1
+        save_recs: True
+      lr: [loguniform, -9.210340372, -5.298317367]
+      epochs: 200
       factors: 64
       batch_size: 1024
-      l_w: 0.0001
+      l_w: [loguniform, -11.512925465, -2.30258509299]
       n_layers: 3
+      seed: 42
