@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 from abc import ABC
 
 from torch_geometric.nn import LGConv
