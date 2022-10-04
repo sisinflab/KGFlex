@@ -20,7 +20,7 @@ experiment:
   gpu: 0
   external_models_path: ../external/models/__init__.py
   evaluation:
-    cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    cutoffs: [10, 1]
     simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved, UserCoverage, Gini, SEntropy, EFD, EPC]
   models:
     external.NeuMF:
