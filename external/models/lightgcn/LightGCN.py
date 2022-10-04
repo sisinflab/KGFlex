@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 from tqdm import tqdm
 import numpy as np
 import torch
@@ -11,6 +14,7 @@ from elliot.recommender.recommender_utils_mixin import RecMixin
 from .LightGCNModel import LightGCNModel
 
 from torch_sparse import SparseTensor
+
 
 
 class LightGCN(RecMixin, BaseRecommenderModel):
