@@ -17,7 +17,7 @@ experiment:
       strategy: random_subsampling
       test_ratio: 0.2
   top_k: 10
-  gpu: 1
+  gpu: 0
   external_models_path: ../external/models/__init__.py
   evaluation:
     cutoffs: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
