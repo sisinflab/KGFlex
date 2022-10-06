@@ -1,0 +1,42 @@
+experiment:
+  dataset: facebook-books
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/dataset.tsv
+    dataloader: KGFlexLoader
+    side_information:
+      work_directory: ../data/{0}
+      map: ../data/{0}/mapping.tsv
+      features: ../data/{0}/item_features.tsv
+      predicates: ../data/{0}/predicate_mapping.tsv
+  prefiltering:
+    strategy: iterative_k_core
+    core: 5
+  splitting:
+    test_splitting:
+        strategy: random_subsampling
+        test_ratio: 0.2
+  top_k: 10
+  gpu: 0
+  external_models_path: ../external/models/__init__.py
+  evaluation:
+    cutoffs: [10, 1]
+    simple_metrics: [nDCGRendle2020, nDCG, HR, Precision, Recall, MAP, MRR, ItemCoverage, UserCoverage, NumRetrieved,
+                     UserCoverage, Gini, SEntropy, EFD, EPC, PopREO, PopRSP, ACLT, APLT, ARP]
+  models:
+    external.NeuMF:
+      meta:
+        verbose: True
+        validation_rate: 1
+        save_recs: True
+        save_weights: False
+        restore: False
+      lr: 0.0006965931656839235
+      batch_size: 512
+      epochs: 200
+      mf_factors: 29
+      mlp_factors: 8
+      mlp_hidden_size: (32, 16, 8)
+      prob_keep_dropout: 1
+      is_mf_train: False
+      is_mlp_train: True
