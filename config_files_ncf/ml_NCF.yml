@@ -26,16 +26,15 @@ experiment:
   models:
     external.NeuMF:
       meta:
+        verbose: True
         hyper_max_evals: 10
         hyper_opt_alg: tpe
-        validation_rate: 5
+        validation_rate: 1
         save_recs: False
       lr: [loguniform, -10, -1]
       batch_size: 512
       epochs: 200
-      mf_factors: [100]
-      mlp_factors: [8, 16]
-      mlp_hidden_size: [(32, 16, 8), (64, 32, 16)]
-      prob_keep_dropout: 1
+      mf_factors: [4, 8, 16]
+      dropout: [0, 0.2]
       is_mf_train: False
       is_mlp_train: True
