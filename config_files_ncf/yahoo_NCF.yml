@@ -33,7 +33,7 @@ experiment:
       lr: [loguniform, -10, -1]
       batch_size: 512
       epochs: 200
-      mf_factors: [1]
+      mf_factors: [100]
       mlp_factors: [8, 16]
       mlp_hidden_size: [(32, 16, 8), (64, 32, 16)]
       prob_keep_dropout: 1
