@@ -14,8 +14,8 @@ experiment:
     core: 5
   splitting:
     test_splitting:
-        strategy: random_subsampling
-        test_ratio: 0.2
+      strategy: random_subsampling
+      test_ratio: 0.2
   top_k: 10
   gpu: 0
   external_models_path: ../external/models/__init__.py
@@ -32,7 +32,7 @@ experiment:
       lr: [loguniform, -10, -1]
       batch_size: 512
       epochs: 200
-      mf_factors: [quniform, 8, 32, 1]
+      mf_factors: [0]
       mlp_factors: [8, 16]
       mlp_hidden_size: [(32, 16, 8), (64, 32, 16)]
       prob_keep_dropout: 1
