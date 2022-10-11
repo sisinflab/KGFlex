@@ -28,13 +28,13 @@ experiment:
     external.NeuMF:
       meta:
         verbose: True
-        validation_rate: 1
+        validation_rate: 7
         save_recs: True
         save_weights: False
         restore: False
       lr: 0.00011558133162155296
       batch_size: 512
-      epochs: 200
+      epochs: 7
       mf_factors: 4
       dropout: 0
       is_mf_train: False
