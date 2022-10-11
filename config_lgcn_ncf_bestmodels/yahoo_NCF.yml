@@ -35,9 +35,7 @@ experiment:
       lr: 0.0006216443713932542
       batch_size: 512
       epochs: 200
-      mf_factors: 11.0
-      mlp_factors: 16
-      mlp_hidden_size: (64, 32, 16)
-      prob_keep_dropout: 1
+      mf_factors: 4
+      dropout: 0
       is_mf_train: False
       is_mlp_train: True
