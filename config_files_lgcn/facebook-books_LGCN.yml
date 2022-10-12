@@ -14,8 +14,8 @@ experiment:
     core: 5
   splitting:
     test_splitting:
-        strategy: random_subsampling
-        test_ratio: 0.2
+      strategy: random_subsampling
+      test_ratio: 0.2
   top_k: 10
   gpu: 1
   external_models_path: ../external/models/__init__.py
