@@ -1,0 +1,33 @@
+experiment:
+  dataset: yahoo-movies
+  data_config:
+    strategy: dataset
+    dataset_path: ../data/{0}/dataset.tsv
+    dataloader: KGFlexLoader
+    side_information:
+      work_directory: ../data/{0}
+      map: ../data/{0}/mapping.tsv
+      features: ../data/{0}/item_features.tsv
+      predicates: ../data/{0}/predicate_mapping.tsv
+  prefiltering:
+    strategy: iterative_k_core
+    core: 10
+  splitting:
+    test_splitting:
+      strategy: random_subsampling
+      test_ratio: 0.2
+  top_k: 10
+  gpu: 0
+  external_models_path: ../external/models/__init__.py
+  evaluation:
+    cutoffs: 10
+    simple_metrics: nDCGRendle2020
+    complex_metrics:
+      - metric: BiasDisparityBD
+        item_clustering_name: Features
+        item_clustering_file: ../data/yahoo-movies/item_features_mapped.tsv
+  models:
+    external.ProxyRecommender:
+      meta:
+        save_recs: True
+      path: /home/alberto/PycharmProjects/KGFlex/best_recs/LightGCN_seed=42_e=185_bs=1024_lr-0.000569845463531435_factors-64_l_w-0.0473031526732651_n_layers-3_it=185.tsv.tsv
